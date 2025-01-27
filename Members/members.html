@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Management - ReadZone e-library</title>
+    <link rel="stylesheet" href="members.css">
+</head>
+<body>
+    
+        <h1>ReadZone e-library</h1>
+    </header>
+    <div class="overlay"></div>
+    <img src="../pics/member.jpeg" alt="Library Books" class="hero-image">
+    <nav>
+        <div class="click">
+            <a href="../homepage/home.html">Home</a>
+            <div class="search-container">
+                <input type="text" id="searchBar" placeholder="Search Members">
+                <button onclick="searchItems()">Search</button>
+            </div>
+        </div>
+    </nav>
+    <header>
+    <div class="container">
+        <h2>Member Management</h2>
+        <button class="button" onclick="showAddMemberForm()">Add New Member</button>
+
+        <!-- Add Member Form -->
+        <div id="addMemberForm" style="display:none; margin-top: 1rem;">
+            <h3>Add Member</h3>
+            <form id="addMember">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required><br><br>
+                <label for="phone">Phone:</label>
+                <input type="text" id="phone" name="phone" required><br><br>
+                <button type="submit" class="button">Add Member</button>
+            </form>
+        </div>
+
+        <!-- Edit Member Form -->
+        <div id="editMemberForm" style="display:none; margin-top: 1rem;">
+            <h3>Edit Member</h3>
+            <form id="editMember">
+                <input type="hidden" id="editMemberId">
+                <label for="editName">Name:</label>
+                <input type="text" id="editName" name="editName" required><br><br>
+                <label for="editEmail">Email:</label>
+                <input type="email" id="editEmail" name="editEmail" required><br><br>
+                <label for="editPhone">Phone:</label>
+                <input type="text" id="editPhone" name="editPhone" required><br><br>
+                <button type="submit" class="button">Save Changes</button>
+                <button type="button" class="button" onclick="hideEditMemberForm()">Cancel</button>
+            </form>
+        </div>
+
+        <!-- Member List -->
+        <h3>All Members</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="memberList">
+                <!-- Member rows will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const memberList = document.getElementById("memberList");
+        const addMemberForm = document.getElementById("addMemberForm");
+        const editMemberForm = document.getElementById("editMemberForm");
+        const editMemberId = document.getElementById("editMemberId");
+        const editName = document.getElementById("editName");
+        const editEmail = document.getElementById("editEmail");
+        const editPhone = document.getElementById("editPhone");
+
+        // Mock data for members
+        let members = [
+            { id: 1, name: "John Doe", email: "john.doe@example.com", phone: "123-456-7890" },
+            { id: 2, name: "Jane Smith", email: "jane.smith@example.com", phone: "098-765-4321" }
+        ];
+
+        // Show Add Member Form
+        function showAddMemberForm() {
+            addMemberForm.style.display = "block";
+            editMemberForm.style.display = "none"; // Hide edit form
+        }
+
+        // Hide Edit Member Form
+        function hideEditMemberForm() {
+            editMemberForm.style.display = "none";
+        }
+
+        // Render Members
+        function renderMembers() {
+            memberList.innerHTML = "";
+            members.forEach(member => {
+                const row = `
+                    <tr>
+                        <td>${member.id}</td>
+                        <td>${member.name}</td>
+                        <td>${member.email}</td>
+                        <td>${member.phone}</td>
+                        <td>
+                            <button class="button" onclick="editMember(${member.id})">Edit</button>
+                            <button class="button" onclick="deleteMember(${member.id})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                memberList.innerHTML += row;
+            });
+        }
+
+        // Edit Member
+        function editMember(id) {
+            const member = members.find(m => m.id === id);
+            if (member) {
+                addMemberForm.style.display = "none"; // Hide add form
+                editMemberForm.style.display = "block"; // Show edit form
+
+                // Populate form with member details
+                editMemberId.value = member.id;
+                editName.value = member.name;
+                editEmail.value = member.email;
+                editPhone.value = member.phone;
+            }
+        }
+
+        // Save Edited Member
+        document.getElementById("editMember").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const id = parseInt(editMemberId.value);
+            const updatedName = editName.value;
+            const updatedEmail = editEmail.value;
+            const updatedPhone = editPhone.value;
+
+            // Update member in mock data
+            const memberIndex = members.findIndex(m => m.id === id);
+            if (memberIndex !== -1) {
+                members[memberIndex].name = updatedName;
+                members[memberIndex].email = updatedEmail;
+                members[memberIndex].phone = updatedPhone;
+                alert("Member updated successfully!");
+                renderMembers(); // Re-render the member list
+                hideEditMemberForm(); // Hide edit form
+            }
+        });
+
+        // Delete Member
+        function deleteMember(id) {
+            members = members.filter(m => m.id !== id);
+            renderMembers();
+            alert(`Member with ID: ${id} deleted!`);
+        }
+
+        // Initial render
+        renderMembers();
+    </script>
+</body>
+</html>

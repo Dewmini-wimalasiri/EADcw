@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Management - ReadZone e-library</title>
+    <link rel="stylesheet" href="staff.css">
+</head>
+<body>
+    
+        <h1>ReadZone e-library</h1>
+    </header>
+    <div class="overlay"></div>
+    <img src="../pics/staff.jpeg" alt="Library Books" class="hero-image">
+    <nav>
+        <div class="click">
+            <a href="../homepage/home.html">Home</a>
+            <div class="search-container">
+                <input type="text" id="searchBar" placeholder="Search Staff">
+                <button onclick="searchItems()">Search</button>
+            </div>
+        </div>
+    </nav>
+    <header>
+    <div class="container">
+        <h2>Staff Management</h2>
+        <button class="button" onclick="showAddStaffForm()">Add New Staff</button>
+
+        <!-- Add Staff Form -->
+        <div id="addStaffForm" style="display:none; margin-top: 1rem;">
+            <h3>Add Staff</h3>
+            <form id="addStaff">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required><br><br>
+                <label for="phone">Phone:</label>
+                <input type="text" id="phone" name="phone" required><br><br>
+                <button type="submit" class="button">Add Staff</button>
+            </form>
+        </div>
+
+        <!-- Edit Staff Form -->
+        <div id="editStaffForm" style="display:none; margin-top: 1rem;">
+            <h3>Edit Staff</h3>
+            <form id="editStaff">
+                <input type="hidden" id="editStaffId">
+                <label for="editName">Name:</label>
+                <input type="text" id="editName" name="editName" required><br><br>
+                <label for="editEmail">Email:</label>
+                <input type="email" id="editEmail" name="editEmail" required><br><br>
+                <label for="editPhone">Phone:</label>
+                <input type="text" id="editPhone" name="editPhone" required><br><br>
+                <button type="submit" class="button">Save Changes</button>
+                <button type="button" class="button" onclick="hideEditStaffForm()">Cancel</button>
+            </form>
+        </div>
+
+        <!-- Staff List -->
+        <h3>All Staff</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="staffList">
+                <!-- Staff rows will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const staffList = document.getElementById("staffList");
+        const addStaffForm = document.getElementById("addStaffForm");
+        const editStaffForm = document.getElementById("editStaffForm");
+        const editStaffId = document.getElementById("editStaffId");
+        const editName = document.getElementById("editName");
+        const editEmail = document.getElementById("editEmail");
+        const editPhone = document.getElementById("editPhone");
+
+        // Mock data for staff
+        let staff = [
+            { id: 1, name: "John Doe", email: "john.doe@example.com", phone: "123-456-7890" },
+            { id: 2, name: "Jane Smith", email: "jane.smith@example.com", phone: "098-765-4321" }
+        ];
+
+        // Show Add Staff Form
+        function showAddStaffForm() {
+            addStaffForm.style.display = "block";
+            editStaffForm.style.display = "none"; // Hide edit form
+        }
+
+        // Hide Edit Staff Form
+        function hideEditStaffForm() {
+            editStaffForm.style.display = "none";
+        }
+
+        // Render Staff
+        function renderStaff() {
+            staffList.innerHTML = "";
+            staff.forEach(staffMember => {
+                const row = `
+                    <tr>
+                        <td>${staffMember.id}</td>
+                        <td>${staffMember.name}</td>
+                        <td>${staffMember.email}</td>
+                        <td>${staffMember.phone}</td>
+                        <td>
+                            <button class="button" onclick="editStaff(${staffMember.id})">Edit</button>
+                            <button class="button" onclick="deleteStaff(${staffMember.id})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                staffList.innerHTML += row;
+            });
+        }
+
+        // Edit Staff
+        function editStaff(id) {
+            const staffMember = staff.find(s => s.id === id);
+            if (staffMember) {
+                addStaffForm.style.display = "none"; // Hide add form
+                editStaffForm.style.display = "block"; // Show edit form
+
+                // Populate form with staff details
+                editStaffId.value = staffMember.id;
+                editName.value = staffMember.name;
+                editEmail.value = staffMember.email;
+                editPhone.value = staffMember.phone;
+            }
+        }
+
+        // Save Edited Staff
+        document.getElementById("editStaff").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const id = parseInt(editStaffId.value);
+            const updatedName = editName.value;
+            const updatedEmail = editEmail.value;
+            const updatedPhone = editPhone.value;
+
+            // Update staff in mock data
+            const staffIndex = staff.findIndex(s => s.id === id);
+            if (staffIndex !== -1) {
+                staff[staffIndex].name = updatedName;
+                staff[staffIndex].email = updatedEmail;
+                staff[staffIndex].phone = updatedPhone;
+                alert("Staff updated successfully!");
+                renderStaff(); // Re-render the staff list
+                hideEditStaffForm(); // Hide edit form
+            }
+        });
+
+        // Delete Staff
+        function deleteStaff(id) {
+            staff = staff.filter(s => s.id !== id);
+            renderStaff();
+            alert(`Staff with ID: ${id} deleted!`);
+        }
+
+        // Initial render
+        renderStaff();
+    </script>
+</body>
+</html>

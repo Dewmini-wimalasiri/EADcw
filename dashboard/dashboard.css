@@ -1,0 +1,141 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    line-height: 1.6;
+    display: flex; /* Enable flexbox on the body */
+    flex-direction: column; /* Stack elements vertically */
+    min-height: 100vh; /* Ensure the body covers the entire viewport height */
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #0f0f0f;
+    color: white;
+    padding: 15px 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 100px;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Maintain original card sizes */
+    gap: 100px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    flex: 1; /* Allow the container to stretch and push the footer down */
+}
+
+.hero-image {
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -2;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: -1;
+}
+
+/* Cards */
+.card {
+    background: rgba(255, 255, 255, 0.358);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.card h2 {
+    font-size: 24px;
+    color: #051c33;
+    margin-bottom: 10px;
+}
+
+.card p {
+    font-size: 16px;
+    margin-bottom: 40px;
+}
+
+/* Action Button */
+.action-button {
+    background-color: #ffcc00;
+    color: #0f0f0f;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    text-transform: uppercase;
+    transition: background 0.3s ease;
+}
+
+.action-button:hover {
+    background-color: #e6b800;
+}
+
+.action-button a {
+    color: #0f0f0f;
+}
+
+/* Footer */
+footer {
+    background-color: #0f0f0f;
+    color: white;
+    text-align: center;
+    padding: 15px 0;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    margin-top: auto; /* Push the footer to the bottom */
+}
+
+footer p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.social-links {
+    margin-top: 10px;
+}
+
+.social-links a {
+    margin: 0 10px;
+}
+
+.social-links img {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+}
+
+.social-links a:hover img {
+    filter: brightness(1.2);
+}

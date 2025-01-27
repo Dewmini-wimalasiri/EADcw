@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books Page - ReadZone e-library</title>
+    <link rel="stylesheet" href="book.css">
+</head>
+<body>
+    <div class="overlay"></div>
+        <img src="../pics/book2.jpeg" alt="Library Books" class="hero-image">
+    <header>
+        <h1>ReadZone e-library</h1>
+    </header>
+    <nav>
+        <div class="click">
+        <a href="../homepage/home.html">Home</a>
+       
+        <div class="search-container">
+            <input type="text" id="searchBar" placeholder="Search Books">
+            <button onclick="searchItems()">Search</button>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h2>Books Management</h2>
+        <button class="button" onclick="showAddBookForm()">Add New Book</button>
+
+        <!-- Add Book Form -->
+        <div id="addBookForm" style="display:none; margin-top: 1rem;">
+            <h3>Add Book</h3>
+            <form id="addBook">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required><br><br>
+                <label for="author">Author:</label>
+                <input type="text" id="author" name="author" required><br><br>
+                <button type="submit" class="button">Add Book</button>
+            </form>
+        </div>
+
+        <!-- Edit Book Form -->
+        <div id="editBookForm" style="display:none; margin-top: 1rem;">
+            <h3>Edit Book</h3>
+            <form id="editBook">
+                <input type="hidden" id="editBookId">
+                <label for="editTitle">Title:</label>
+                <input type="text" id="editTitle" name="editTitle" required><br><br>
+                <label for="editAuthor">Author:</label>
+                <input type="text" id="editAuthor" name="editAuthor" required><br><br>
+                <button type="submit" class="button">Save Changes</button>
+                <button type="button" class="button" onclick="hideEditBookForm()">Cancel</button>
+            </form>
+        </div>
+
+        <!-- Book List -->
+        <h3>All Books</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="bookList">
+                <!-- Book rows will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const bookList = document.getElementById("bookList");
+        const addBookForm = document.getElementById("addBookForm");
+        const editBookForm = document.getElementById("editBookForm");
+        const editBookId = document.getElementById("editBookId");
+        const editTitle = document.getElementById("editTitle");
+        const editAuthor = document.getElementById("editAuthor");
+
+        // Mock data
+        let books = [
+            { id: 1, title: "Spring Boot Essentials", author: "John Doe" },
+            { id: 2, title: "Advanced Java", author: "Jane Doe" }
+        ];
+
+        // Show Add Book Form
+        function showAddBookForm() {
+            addBookForm.style.display = "block";
+            editBookForm.style.display = "none"; // Hide edit form
+        }
+
+        // Hide Edit Book Form
+        function hideEditBookForm() {
+            editBookForm.style.display = "none";
+        }
+
+        // Render Books
+        function renderBooks() {
+            bookList.innerHTML = "";
+            books.forEach(book => {
+                const row = `
+                    <tr>
+                        <td>${book.id}</td>
+                        <td>${book.title}</td>
+                        <td>${book.author}</td>
+                        <td>
+                            <button class="button" onclick="editBook(${book.id})">Edit</button>
+                            <button class="button" onclick="deleteBook(${book.id})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                bookList.innerHTML += row;
+            });
+        }
+
+        // Edit Book
+        function editBook(id) {
+            const book = books.find(b => b.id === id);
+            if (book) {
+                addBookForm.style.display = "none"; // Hide add form
+                editBookForm.style.display = "block"; // Show edit form
+
+                // Populate form with book details
+                editBookId.value = book.id;
+                editTitle.value = book.title;
+                editAuthor.value = book.author;
+            }
+        }
+
+        // Save Edited Book
+        document.getElementById("editBook").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const id = parseInt(editBookId.value);
+            const updatedTitle = editTitle.value;
+            const updatedAuthor = editAuthor.value;
+
+            // Update book in mock data
+            const bookIndex = books.findIndex(b => b.id === id);
+            if (bookIndex !== -1) {
+                books[bookIndex].title = updatedTitle;
+                books[bookIndex].author = updatedAuthor;
+                alert("Book updated successfully!");
+                renderBooks(); // Re-render the book list
+                hideEditBookForm(); // Hide edit form
+            }
+        });
+
+        // Delete Book
+        function deleteBook(id) {
+            books = books.filter(b => b.id !== id);
+            renderBooks();
+            alert(`Book with ID: ${id} deleted!`);
+        }
+
+        // Initial render
+        renderBooks();
+    </script>
+</body>
+</html>
