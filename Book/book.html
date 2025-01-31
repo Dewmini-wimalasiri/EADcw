@@ -8,20 +8,21 @@
 </head>
 <body>
     <div class="overlay"></div>
-        <img src="../pics/book2.jpeg" alt="Library Books" class="hero-image">
+    <img src="../pics/book2.jpeg" alt="Library Books" class="hero-image">
     <header>
         <h1>ReadZone e-library</h1>
     </header>
     <nav>
         <div class="click">
-        <a href="../homepage/home.html">Home</a>
-       
-        <div class="search-container">
-            <input type="text" id="searchBar" placeholder="Search Books">
-            <button onclick="searchItems()">Search</button>
+            <a href="../homepage/home.html">Home</a>
+            <a href="../dashboard/dashboard.html">Categories</a>
+            <div class="search-container">
+                <input type="text" id="searchBar" placeholder="Search Books by Id">
+                <button onclick="searchBooks()">Search</button>
+            </div>
         </div>
     </nav>
-    
+
     <div class="container">
         <h2>Books Management</h2>
         <button class="button" onclick="showAddBookForm()">Add New Book</button>
@@ -76,84 +77,140 @@
         const editBookId = document.getElementById("editBookId");
         const editTitle = document.getElementById("editTitle");
         const editAuthor = document.getElementById("editAuthor");
+        const searchBar = document.getElementById("searchBar");
 
-        // Mock data
-        let books = [
-            { id: 1, title: "Spring Boot Essentials", author: "John Doe" },
-            { id: 2, title: "Advanced Java", author: "Jane Doe" }
-        ];
+        const API_URL = "http://localhost:8080/lms/v1/books";
 
-        // Show Add Book Form
-        function showAddBookForm() {
-            addBookForm.style.display = "block";
-            editBookForm.style.display = "none"; // Hide edit form
+        function fetchBooks() {
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    bookList.innerHTML = "";
+                    data.forEach(book => {
+                        const row = `
+                            <tr>
+                                <td>${book.id}</td>
+                                <td>${book.title}</td>
+                                <td>${book.author}</td>
+                                <td>
+                                    <button class="button" onclick="editBook(${book.id}, '${book.title}', '${book.author}')">Edit</button>
+                                    <button class="button" onclick="deleteBook(${book.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                        bookList.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error("Error fetching books:", error));
         }
 
-        // Hide Edit Book Form
+        document.getElementById("searchBar").addEventListener("input", searchBooks);
+
+        function searchBooks() {
+        const searchTerm = document.getElementById("searchBar").value.trim().toLowerCase();
+
+        fetch(API_URL)
+            .then(response => response.json())
+            .then(data => {
+                const filteredBooks = data.filter(book =>
+                    book.id.toString().includes(searchTerm) ||  // Match ID
+                    book.title.toLowerCase().includes(searchTerm) ||  // Match Title
+                    book.author.toLowerCase().includes(searchTerm)  // Match Author
+                );
+
+                bookList.innerHTML = ""; // Clear current list
+
+                if (filteredBooks.length === 0) {
+                    bookList.innerHTML = `<tr><td colspan="4">No matching books found</td></tr>`;
+                    return;
+                }
+
+                filteredBooks.forEach(book => {
+                    const row = `
+                        <tr>
+                            <td>${book.id}</td>
+                            <td>${book.title}</td>
+                            <td>${book.author}</td>
+                            <td>
+                                <button class="button" onclick="editBook(${book.id}, '${book.title}', '${book.author}')">Edit</button>
+                                <button class="button" onclick="deleteBook(${book.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                    bookList.innerHTML += row;
+                });
+            })
+            .catch(error => console.error("Error searching books:", error));
+    }
+
+
+
+        function showAddBookForm() {
+            addBookForm.style.display = "block";
+            editBookForm.style.display = "none";
+        }
+
         function hideEditBookForm() {
             editBookForm.style.display = "none";
         }
 
-        // Render Books
-        function renderBooks() {
-            bookList.innerHTML = "";
-            books.forEach(book => {
-                const row = `
-                    <tr>
-                        <td>${book.id}</td>
-                        <td>${book.title}</td>
-                        <td>${book.author}</td>
-                        <td>
-                            <button class="button" onclick="editBook(${book.id})">Edit</button>
-                            <button class="button" onclick="deleteBook(${book.id})">Delete</button>
-                        </td>
-                    </tr>
-                `;
-                bookList.innerHTML += row;
-            });
-        }
-
-        // Edit Book
-        function editBook(id) {
-            const book = books.find(b => b.id === id);
-            if (book) {
-                addBookForm.style.display = "none"; // Hide add form
-                editBookForm.style.display = "block"; // Show edit form
-
-                // Populate form with book details
-                editBookId.value = book.id;
-                editTitle.value = book.title;
-                editAuthor.value = book.author;
-            }
-        }
-
-        // Save Edited Book
-        document.getElementById("editBook").addEventListener("submit", function (event) {
+        document.getElementById("addBook").addEventListener("submit", function (event) {
             event.preventDefault();
-            const id = parseInt(editBookId.value);
-            const updatedTitle = editTitle.value;
-            const updatedAuthor = editAuthor.value;
+            let title = document.getElementById("title").value;
+            let author = document.getElementById("author").value;
 
-            // Update book in mock data
-            const bookIndex = books.findIndex(b => b.id === id);
-            if (bookIndex !== -1) {
-                books[bookIndex].title = updatedTitle;
-                books[bookIndex].author = updatedAuthor;
-                alert("Book updated successfully!");
-                renderBooks(); // Re-render the book list
-                hideEditBookForm(); // Hide edit form
-            }
+            fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, author })
+            })
+            .then(response => response.json())
+            .then(() => {
+                alert("Book added successfully!");
+                fetchBooks();
+                document.getElementById("addBook").reset();
+            })
+            .catch(error => console.error("Error adding book:", error));
         });
 
-        // Delete Book
-        function deleteBook(id) {
-            books = books.filter(b => b.id !== id);
-            renderBooks();
-            alert(`Book with ID: ${id} deleted!`);
+        function editBook(id, title, author) {
+            addBookForm.style.display = "none";
+            editBookForm.style.display = "block";
+            editBookId.value = id;
+            editTitle.value = title;
+            editAuthor.value = author;
         }
 
-        // Initial render
-        renderBooks();
+        document.getElementById("editBook").addEventListener("submit", function (event) {
+            event.preventDefault();
+            let id = editBookId.value;
+            let updatedTitle = editTitle.value;
+            let updatedAuthor = editAuthor.value;
+
+            fetch(`${API_URL}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: updatedTitle, author: updatedAuthor })
+            })
+            .then(response => response.json())
+            .then(() => {
+                alert("Book updated successfully!");
+                fetchBooks();
+                hideEditBookForm();
+            })
+            .catch(error => console.error("Error updating book:", error));
+        });
+
+        function deleteBook(id) {
+            fetch(`${API_URL}/${id}`, { method: "DELETE" })
+                .then(() => {
+                    alert(`Book with ID: ${id} deleted!`);
+                    fetchBooks();
+                })
+                .catch(error => console.error("Error deleting book:", error));
+        }
+
+        fetchBooks();
     </script>
 </body>
 </html>

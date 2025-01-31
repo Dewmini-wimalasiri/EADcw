@@ -8,22 +8,21 @@
 </head>
 <body>
     <div class="overlay"></div>
-        <img src="../pics/book2.jpeg" alt="Library Books" class="hero-image">
+    <img src="../pics/member.jpeg" alt="Library Members" class="hero-image">
     <header>
         <h1>ReadZone e-library</h1>
     </header>
-    <div class="overlay"></div>
-    <img src="../pics/member.jpeg" alt="Library Books" class="hero-image">
     <nav>
         <div class="click">
             <a href="../homepage/home.html">Home</a>
+            <a href="../dashboard/dashboard.html">Categories</a>
             <div class="search-container">
-                <input type="text" id="searchBar" placeholder="Search Members">
-                <button onclick="searchItems()">Search</button>
+                <input type="text" id="searchBar" placeholder="Search Members by Id">
+                <button onclick="searchMembers()">Search</button>
             </div>
         </div>
     </nav>
-    <header>
+
     <div class="container">
         <h2>Member Management</h2>
         <button class="button" onclick="showAddMemberForm()">Add New Member</button>
@@ -84,28 +83,57 @@
         const editName = document.getElementById("editName");
         const editEmail = document.getElementById("editEmail");
         const editPhone = document.getElementById("editPhone");
+        const searchBar = document.getElementById("searchBar");
 
-        // Mock data for members
-        let members = [
-            { id: 1, name: "John Doe", email: "john.doe@example.com", phone: "123-456-7890" },
-            { id: 2, name: "Jane Smith", email: "jane.smith@example.com", phone: "098-765-4321" }
-        ];
+        const API_URL = "http://localhost:8080/lms/v1/members";
 
-        // Show Add Member Form
-        function showAddMemberForm() {
-            addMemberForm.style.display = "block";
-            editMemberForm.style.display = "none"; // Hide edit form
+        function fetchMembers() {
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    memberList.innerHTML = "";
+                    data.forEach(member => {
+                        const row = `
+                            <tr>
+                                <td>${member.id}</td>
+                                <td>${member.name}</td>
+                                <td>${member.email}</td>
+                                <td>${member.phone}</td>
+                                <td>
+                                    <button class="button" onclick="editMember(${member.id}, '${member.name}', '${member.email}', '${member.phone}')">Edit</button>
+                                    <button class="button" onclick="deleteMember(${member.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                        memberList.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error("Error fetching members:", error));
         }
 
-        // Hide Edit Member Form
-        function hideEditMemberForm() {
-            editMemberForm.style.display = "none";
-        }
+        document.getElementById("searchBar").addEventListener("input", searchMembers);
 
-        // Render Members
-        function renderMembers() {
-            memberList.innerHTML = "";
-            members.forEach(member => {
+        function searchMembers() {
+    const searchTerm = searchBar.value.trim();
+
+    // Convert the search term to a number
+    const searchNumber = Number(searchTerm);
+
+    fetch(API_URL)
+        .then(response => response.json())
+        .then(data => {
+            const filteredMembers = data.filter(member => 
+                member.id === searchNumber  // Directly compare the long id with the number
+            );
+
+            memberList.innerHTML = ""; // Clear current list
+
+            if (filteredMembers.length === 0) {
+                memberList.innerHTML = `<tr><td colspan="5">No matching members found</td></tr>`;
+                return;
+            }
+
+            filteredMembers.forEach(member => {
                 const row = `
                     <tr>
                         <td>${member.id}</td>
@@ -113,59 +141,86 @@
                         <td>${member.email}</td>
                         <td>${member.phone}</td>
                         <td>
-                            <button class="button" onclick="editMember(${member.id})">Edit</button>
+                            <button class="button" onclick="editMember(${member.id}, '${member.name}', '${member.email}', '${member.phone}')">Edit</button>
                             <button class="button" onclick="deleteMember(${member.id})">Delete</button>
                         </td>
                     </tr>
                 `;
                 memberList.innerHTML += row;
             });
+        })
+        .catch(error => console.error("Error searching members:", error));
+}
+        function showAddMemberForm() {
+            addMemberForm.style.display = "block";
+            editMemberForm.style.display = "none";
         }
 
-        // Edit Member
-        function editMember(id) {
-            const member = members.find(m => m.id === id);
-            if (member) {
-                addMemberForm.style.display = "none"; // Hide add form
-                editMemberForm.style.display = "block"; // Show edit form
-
-                // Populate form with member details
-                editMemberId.value = member.id;
-                editName.value = member.name;
-                editEmail.value = member.email;
-                editPhone.value = member.phone;
-            }
+        function hideEditMemberForm() {
+            editMemberForm.style.display = "none";
         }
 
-        // Save Edited Member
-        document.getElementById("editMember").addEventListener("submit", function (event) {
+        document.getElementById("addMember").addEventListener("submit", function (event) {
             event.preventDefault();
-            const id = parseInt(editMemberId.value);
-            const updatedName = editName.value;
-            const updatedEmail = editEmail.value;
-            const updatedPhone = editPhone.value;
+            let name = document.getElementById("name").value;
+            let email = document.getElementById("email").value;
+            let phone = document.getElementById("phone").value;
 
-            // Update member in mock data
-            const memberIndex = members.findIndex(m => m.id === id);
-            if (memberIndex !== -1) {
-                members[memberIndex].name = updatedName;
-                members[memberIndex].email = updatedEmail;
-                members[memberIndex].phone = updatedPhone;
-                alert("Member updated successfully!");
-                renderMembers(); // Re-render the member list
-                hideEditMemberForm(); // Hide edit form
-            }
+            fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, phone })
+            })
+            .then(response => response.json())
+            .then(() => {
+                alert("Member added successfully!");
+                fetchMembers();
+                document.getElementById("addMember").reset();
+            })
+            .catch(error => console.error("Error adding member:", error));
         });
 
-        // Delete Member
-        function deleteMember(id) {
-            members = members.filter(m => m.id !== id);
-            renderMembers();
-            alert(`Member with ID: ${id} deleted!`);
+        function editMember(id, name, email, phone) {
+            addMemberForm.style.display = "none";
+            editMemberForm.style.display = "block";
+            editMemberId.value = id;
+            editName.value = name;
+            editEmail.value = email;
+            editPhone.value = phone;
         }
 
-        // Initial render
-        renderMembers();
+        document.getElementById("editMember").addEventListener("submit", function (event) {
+            event.preventDefault();
+            let id = editMemberId.value;
+            let updatedName = editName.value;
+            let updatedEmail = editEmail.value;
+            let updatedPhone = editPhone.value;
+
+            fetch(`${API_URL}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: updatedName, email: updatedEmail, phone: updatedPhone })
+            })
+            .then(response => response.json())
+            .then(() => {
+                alert("Member updated successfully!");
+                fetchMembers();
+                hideEditMemberForm();
+            })
+            .catch(error => console.error("Error updating member:", error));
+        });
+
+        function deleteMember(id) {
+            fetch(`${API_URL}/${id}`, { method: "DELETE" })
+                .then(() => {
+                    alert(`Member with ID: ${id} deleted!`);
+                    fetchMembers();
+                })
+                .catch(error => console.error("Error deleting member:", error));
+        }
+
+        // Initial fetch
+        fetchMembers();
     </script>
 </body>
 </html>

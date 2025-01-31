@@ -15,6 +15,27 @@ a {
     color: inherit;
 }
 
+/* Navigation */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    position: relative;
+    z-index: 2;
+}
+
+nav .click a {
+    text-decoration: none;
+    color: white;
+    margin: 0 15px;
+    font-size: 1rem;
+}
+
+nav .click a:hover {
+    color: #7f5539;;
+}
+
 /* Navbar */
 .navbar {
     background-color: #0f0f0f;

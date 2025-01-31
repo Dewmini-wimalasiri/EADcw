@@ -8,22 +8,21 @@
 </head>
 <body>
     <div class="overlay"></div>
-        <img src="../pics/book2.jpeg" alt="Library Books" class="hero-image">
+    <img src="../pics/staff.jpeg" alt="Library Staff" class="hero-image">
     <header>
         <h1>ReadZone e-library</h1>
     </header>
-    <div class="overlay"></div>
-    <img src="../pics/staff.jpeg" alt="Library Books" class="hero-image">
     <nav>
         <div class="click">
             <a href="../homepage/home.html">Home</a>
+            <a href="../dashboard/dashboard.html">Categories</a>
             <div class="search-container">
-                <input type="text" id="searchBar" placeholder="Search Staff">
-                <button onclick="searchItems()">Search</button>
+                <input type="text" id="searchBar" placeholder="Search Staffs by Id">
+                <button onclick="searchStaff()">Search</button>
             </div>
         </div>
     </nav>
-    <header>
+
     <div class="container">
         <h2>Staff Management</h2>
         <button class="button" onclick="showAddStaffForm()">Add New Staff</button>
@@ -84,88 +83,142 @@
         const editName = document.getElementById("editName");
         const editEmail = document.getElementById("editEmail");
         const editPhone = document.getElementById("editPhone");
+        const searchBar = document.getElementById("searchBar");
 
-        // Mock data for staff
-        let staff = [
-            { id: 1, name: "John Doe", email: "john.doe@example.com", phone: "123-456-7890" },
-            { id: 2, name: "Jane Smith", email: "jane.smith@example.com", phone: "098-765-4321" }
-        ];
+        const API_URL = "http://localhost:8080/lms/v1/staffs";
 
-        // Show Add Staff Form
-        function showAddStaffForm() {
-            addStaffForm.style.display = "block";
-            editStaffForm.style.display = "none"; // Hide edit form
+        function fetchStaff() {
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    staffList.innerHTML = "";
+                    data.forEach(staffMember => {
+                        const row = `
+                            <tr>
+                                <td>${staffMember.id}</td>
+                                <td>${staffMember.name}</td>
+                                <td>${staffMember.email}</td>
+                                <td>${staffMember.phone}</td>
+                                <td>
+                                    <button class="button" onclick="editStaff(${staffMember.id}, '${staffMember.name}', '${staffMember.email}', '${staffMember.phone}')">Edit</button>
+                                    <button class="button" onclick="deleteStaff(${staffMember.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                        staffList.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error("Error fetching staff:", error));
         }
 
-        // Hide Edit Staff Form
+        function searchStaff() {
+            const searchTerm = searchBar.value.trim();
+            const searchNumber = Number(searchTerm);
+
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    const filteredStaff = data.filter(staffMember => 
+                        staffMember.id === searchNumber  // Compare ID with the number from search
+                    );
+
+                    staffList.innerHTML = "";
+
+                    if (filteredStaff.length === 0) {
+                        staffList.innerHTML = `<tr><td colspan="5">No matching staff found</td></tr>`;
+                        return;
+                    }
+
+                    filteredStaff.forEach(staffMember => {
+                        const row = `
+                            <tr>
+                                <td>${staffMember.id}</td>
+                                <td>${staffMember.name}</td>
+                                <td>${staffMember.email}</td>
+                                <td>${staffMember.phone}</td>
+                                <td>
+                                    <button class="button" onclick="editStaff(${staffMember.id}, '${staffMember.name}', '${staffMember.email}', '${staffMember.phone}')">Edit</button>
+                                    <button class="button" onclick="deleteStaff(${staffMember.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                        staffList.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error("Error searching staff:", error));
+        }
+
+        function showAddStaffForm() {
+            addStaffForm.style.display = "block";
+            editStaffForm.style.display = "none";
+        }
+
         function hideEditStaffForm() {
             editStaffForm.style.display = "none";
         }
 
-        // Render Staff
-        function renderStaff() {
-            staffList.innerHTML = "";
-            staff.forEach(staffMember => {
-                const row = `
-                    <tr>
-                        <td>${staffMember.id}</td>
-                        <td>${staffMember.name}</td>
-                        <td>${staffMember.email}</td>
-                        <td>${staffMember.phone}</td>
-                        <td>
-                            <button class="button" onclick="editStaff(${staffMember.id})">Edit</button>
-                            <button class="button" onclick="deleteStaff(${staffMember.id})">Delete</button>
-                        </td>
-                    </tr>
-                `;
-                staffList.innerHTML += row;
-            });
+        document.getElementById("addStaff").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const phone = document.getElementById("phone").value;
+
+            fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, phone })
+            })
+            .then(response => response.json())
+            .then(() => {
+                alert("Staff added successfully!");
+                fetchStaff();
+                document.getElementById("addStaff").reset();
+                addStaffForm.style.display = "none";  // Hide the add staff form after submission
+            })
+            .catch(error => console.error("Error adding staff:", error));
+        });
+
+        function editStaff(id, name, email, phone) {
+            addStaffForm.style.display = "none";
+            editStaffForm.style.display = "block";
+            editStaffId.value = id;
+            editName.value = name;
+            editEmail.value = email;
+            editPhone.value = phone;
         }
 
-        // Edit Staff
-        function editStaff(id) {
-            const staffMember = staff.find(s => s.id === id);
-            if (staffMember) {
-                addStaffForm.style.display = "none"; // Hide add form
-                editStaffForm.style.display = "block"; // Show edit form
-
-                // Populate form with staff details
-                editStaffId.value = staffMember.id;
-                editName.value = staffMember.name;
-                editEmail.value = staffMember.email;
-                editPhone.value = staffMember.phone;
-            }
-        }
-
-        // Save Edited Staff
         document.getElementById("editStaff").addEventListener("submit", function (event) {
             event.preventDefault();
-            const id = parseInt(editStaffId.value);
+            const id = editStaffId.value;
             const updatedName = editName.value;
             const updatedEmail = editEmail.value;
             const updatedPhone = editPhone.value;
 
-            // Update staff in mock data
-            const staffIndex = staff.findIndex(s => s.id === id);
-            if (staffIndex !== -1) {
-                staff[staffIndex].name = updatedName;
-                staff[staffIndex].email = updatedEmail;
-                staff[staffIndex].phone = updatedPhone;
+            fetch(`${API_URL}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: updatedName, email: updatedEmail, phone: updatedPhone })
+            })
+            .then(response => response.json())
+            .then(() => {
                 alert("Staff updated successfully!");
-                renderStaff(); // Re-render the staff list
-                hideEditStaffForm(); // Hide edit form
-            }
+                fetchStaff();
+                hideEditStaffForm();
+            })
+            .catch(error => console.error("Error updating staff:", error));
         });
 
-        // Delete Staff
         function deleteStaff(id) {
-            staff = staff.filter(s => s.id !== id);
-            renderStaff();
-            alert(`Staff with ID: ${id} deleted!`);
+            fetch(`${API_URL}/${id}`, { method: "DELETE" })
+                .then(() => {
+                    alert(`Staff with ID: ${id} deleted!`);
+                    fetchStaff();
+                })
+                .catch(error => console.error("Error deleting staff:", error));
         }
 
-        // Initial render
-        renderStaff();
+        // Initial fetch
+        fetchStaff();
     </script>
 </body>
 </html>
